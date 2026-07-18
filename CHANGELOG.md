@@ -8,3 +8,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 - Repository scaffolding: governance files, docs, and CI skeleton.
+- Replay-safe, idempotent webhook inbox: constant-time HMAC verification, replay window, atomic dedup ($wpdb UNIQUE-key store).
+- Oversell-safe stock ledger: reserved vs committed stock, TTL reclaim, never sells below zero.
+- REST webhook endpoint wiring (fails safe without a signing secret).
+- 20 PHPUnit tests; PHPCS/WPCS clean; CI on PHP 8.1 and 8.3.

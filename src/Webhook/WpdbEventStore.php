@@ -1,0 +1,80 @@
+<?php
+/**
+ * Database-backed ProcessedEventStore using WordPress' $wpdb.
+ *
+ * Deduplication must survive process restarts and be safe under concurrent
+ * deliveries. Both are achieved with a UNIQUE column on the event id: the claim
+ * is a single INSERT, and the database — not PHP — arbitrates the race. If the
+ * insert hits the unique constraint, the caller lost the claim (a duplicate).
+ *
+ * @package Pixypuala\ResilientCommerce
+ */
+
+declare( strict_types=1 );
+
+namespace Pixypuala\ResilientCommerce\Webhook;
+
+/**
+ * Persists processed webhook event ids.
+ */
+final class WpdbEventStore implements ProcessedEventStore {
+
+	private string $table;
+
+	/**
+	 * @param \wpdb $wpdb WordPress database handle.
+	 */
+	public function __construct( private readonly \wpdb $wpdb ) {
+		$this->table = $wpdb->prefix . 'rc_processed_events';
+	}
+
+	/**
+	 * Create the dedup table. Called on plugin activation.
+	 *
+	 * dbDelta is intentionally not used here to keep the schema explicit; the
+	 * UNIQUE key on event_id is the correctness-critical part.
+	 */
+	public function install(): void {
+		$charset = $this->wpdb->get_charset_collate();
+		$sql     = "CREATE TABLE IF NOT EXISTS {$this->table} (
+			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+			event_id VARCHAR(191) NOT NULL,
+			processed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (id),
+			UNIQUE KEY event_id (event_id)
+		) {$charset};";
+
+		// $sql contains only a constant DDL string plus the trusted, prefixed
+		// table name — no user input. Identifiers cannot be bound placeholders.
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$this->wpdb->query( $sql );
+	}
+
+	public function has( string $event_id ): bool {
+		// The interpolated value is the trusted, prefixed table name (an SQL
+		// identifier, which cannot be a bound placeholder); $event_id is bound.
+		$prepared = $this->wpdb->prepare( "SELECT 1 FROM {$this->table} WHERE event_id = %s", $event_id ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// $prepared is already a prepared statement (see line above).
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$found = $this->wpdb->get_var( $prepared );
+		return null !== $found;
+	}
+
+	/**
+	 * Atomically claim an event id via a UNIQUE-constrained INSERT.
+	 *
+	 * @param string $event_id Provider-unique event id.
+	 *
+	 * @return bool True when this caller won the claim.
+	 */
+	public function claim( string $event_id ): bool {
+		// Suppress the expected duplicate-key warning; a false return is the
+		// signal that the id was already claimed (a duplicate delivery).
+		$previous = $this->wpdb->suppress_errors( true );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$inserted = $this->wpdb->insert( $this->table, array( 'event_id' => $event_id ), array( '%s' ) );
+		$this->wpdb->suppress_errors( $previous );
+
+		return false !== $inserted && $this->wpdb->rows_affected > 0;
+	}
+}

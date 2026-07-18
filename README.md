@@ -6,6 +6,36 @@ A revenue-critical WooCommerce reference implementation that proves commerce arc
 
 This project is not considered complete when the UI looks good. It must demonstrate discovery, architecture, code quality, accessibility, security, performance, test design, deployment, recovery, documentation, and public communication.
 
+## Getting started
+
+Requires PHP 8.1+ and Composer.
+
+```bash
+composer install
+composer test    # 20 unit tests: signature verification, replay-safe inbox, oversell-safe stock
+composer lint    # WordPress coding standards (PHPCS)
+```
+
+## What is built today
+
+The revenue-critical core is implemented and unit-tested without WordPress:
+
+- **Replay-safe webhook inbox** (`src/Webhook/`) — every delivery must pass, in order:
+  constant-time HMAC **signature** verification → well-formedness → **replay window** →
+  atomic **deduplication**. Only then does the handler run, exactly once. This is what
+  prevents duplicate refunds and double-fulfilled orders. A `$wpdb`-backed store makes the
+  dedup claim atomic via a `UNIQUE` key, so concurrent deliveries cannot both win.
+- **Oversell-safe stock ledger** (`src/Inventory/`) — separates reserved (a checkout hold
+  with TTL) from committed stock; availability always accounts for live reservations, so a
+  reservation can never drive stock below zero. Abandoned holds are reclaimed on expiry.
+- **REST integration** (`src/Http/`, `resilient-commerce.php`) — a `POST /resilient-commerce/v1/webhook`
+  route wires the inbox to WordPress and fails safe (no endpoint unless a signing secret is set).
+
+## Documented boundary (not yet built)
+
+WooCommerce order/refund handlers, tax/shipping adapters, the operations console, Playwright
+checkout journeys, and the WooCommerce contract-test extraction (`wc-integration-contract-test-kit`).
+
 ## PCAAP
 
 ### Problem
