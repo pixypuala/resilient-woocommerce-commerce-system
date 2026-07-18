@@ -12,4 +12,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Oversell-safe stock ledger: reserved vs committed stock, TTL reclaim, never sells below zero.
 - REST webhook endpoint wiring (fails safe without a signing secret).
 - Idempotent, WooCommerce-aligned `OrderStateMachine` (`src/Order/`): redelivered status events are safe no-ops; illegal lifecycle transitions are rejected.
-- 27 PHPUnit tests; PHPCS/WPCS clean; CI on PHP 8.1 and 8.3.
+- 27 PHPUnit tests; PHPCS/WPCS clean; CI on PHP 8.1, 8.2, 8.3, and 8.4.
+- WordPress-Proof canvas evidence set: `docs/audit/BASELINE-AUDIT.md`, `docs/security/THREAT-MODEL.md`, `docs/audit/FINAL-AUDIT.md`, `docs/audit/RELEASE-EVIDENCE.md`.
+
+### Changed
+- Widened the CI PHP matrix from `8.1, 8.3` to the full declared range `8.1, 8.2, 8.3, 8.4`.

@@ -44,6 +44,16 @@ WooCommerce contract-test extraction (`wc-integration-contract-test-kit`). The s
 *rules* are built and tested (above); only the WooCommerce-loaded binding is deferred, because it
 cannot be exercised without a full WooCommerce runtime.
 
+## Audit & security evidence
+
+Real, reproducible evidence of the current state (all figures come from commands
+run against the repo, not aspirations):
+
+- [`docs/audit/BASELINE-AUDIT.md`](docs/audit/BASELINE-AUDIT.md) — branch, commit, install/test/standards results, `src/` inventory, and honest gaps.
+- [`docs/security/THREAT-MODEL.md`](docs/security/THREAT-MODEL.md) — assets, trust boundaries, the public webhook attack surface, and a grounded threat table.
+- [`docs/audit/FINAL-AUDIT.md`](docs/audit/FINAL-AUDIT.md) — §26 walkthrough, the §16.5 quality scorecard, and the honest maturity classification.
+- [`docs/audit/RELEASE-EVIDENCE.md`](docs/audit/RELEASE-EVIDENCE.md) — version, SHA, PHP/test/standards results, and the explicit "not executed" boundaries.
+
 ## PCAAP
 
 ### Problem
