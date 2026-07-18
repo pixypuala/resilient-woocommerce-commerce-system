@@ -12,7 +12,7 @@ Requires PHP 8.1+ and Composer.
 
 ```bash
 composer install
-composer test    # 20 unit tests: signature verification, replay-safe inbox, oversell-safe stock
+composer test    # 27 unit tests: signature verification, replay-safe inbox, oversell-safe stock, order-state rules
 composer lint    # WordPress coding standards (PHPCS)
 ```
 
