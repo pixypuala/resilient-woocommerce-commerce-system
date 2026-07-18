@@ -19,6 +19,8 @@ declare( strict_types=1 );
 namespace Pixypuala\ResilientCommerce;
 
 use Pixypuala\ResilientCommerce\Http\WebhookController;
+use Pixypuala\ResilientCommerce\Integration\WooCommerceOrderSync;
+use Pixypuala\ResilientCommerce\Order\WebhookStatusResolver;
 use Pixypuala\ResilientCommerce\Webhook\SignatureVerifier;
 use Pixypuala\ResilientCommerce\Webhook\WebhookInbox;
 use Pixypuala\ResilientCommerce\Webhook\WpdbEventStore;
@@ -75,5 +77,9 @@ add_action(
 		global $wpdb;
 		$inbox = new WebhookInbox( new SignatureVerifier( $secret ), new WpdbEventStore( $wpdb ) );
 		( new WebhookController( $inbox ) )->register_routes();
+
+		// Apply authenticated order webhooks to live WooCommerce orders. The sync
+		// is dependency-detected and a no-op when WooCommerce is not loaded.
+		( new WooCommerceOrderSync( new WebhookStatusResolver() ) )->register();
 	}
 );

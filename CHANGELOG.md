@@ -12,7 +12,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Oversell-safe stock ledger: reserved vs committed stock, TTL reclaim, never sells below zero.
 - REST webhook endpoint wiring (fails safe without a signing secret).
 - Idempotent, WooCommerce-aligned `OrderStateMachine` (`src/Order/`): redelivered status events are safe no-ops; illegal lifecycle transitions are rejected.
-- 27 PHPUnit tests; PHPCS/WPCS clean; CI on PHP 8.1, 8.2, 8.3, and 8.4.
+- Deterministic, framework-free tax calculator (`src/Tax/`): integer minor units and integer `rate_e4` rates, half-up rounding, zero-rate and compound ("tax on tax") support, per-rate breakdown.
+- Framework-free shipping-rate selector (`src/Shipping/`): free-shipping thresholds and per-weight tiers on each rate; picks the cheapest eligible rate deterministically; fails loudly when none applies.
+- Partial-refund rules (`src/Order/Refund.php`, `RefundLedger.php`): a `Refund` value object and a ledger enforcing that cumulative refunds never exceed the captured amount; a full refund drives the `Refunded` status.
+- WooCommerce order-sync adapter (`src/Integration/WooCommerceOrderSync.php`) with an extracted, unit-tested `WebhookStatusResolver` (`src/Order/`): subscribes to `resilient_commerce_webhook`, is dependency-detected via `function_exists( 'wc_get_order' )`, and applies changes through the `OrderStateMachine`; only `wc_get_order`/`save()` are live-WooCommerce glue.
+- 59 PHPUnit tests; PHPCS/WPCS clean; CI on PHP 8.1, 8.2, 8.3, and 8.4.
 - WordPress-Proof canvas evidence set: `docs/audit/BASELINE-AUDIT.md`, `docs/security/THREAT-MODEL.md`, `docs/audit/FINAL-AUDIT.md`, `docs/audit/RELEASE-EVIDENCE.md`.
 
 ### Changed

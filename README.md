@@ -12,7 +12,7 @@ Requires PHP 8.1+ and Composer.
 
 ```bash
 composer install
-composer test    # 27 unit tests: signature verification, replay-safe inbox, oversell-safe stock, order-state rules
+composer test    # 59 unit tests: signature verification, replay-safe inbox, oversell-safe stock, order-state rules, tax, shipping, refunds, webhook status mapping
 composer lint    # WordPress coding standards (PHPCS)
 ```
 
@@ -35,14 +35,33 @@ The revenue-critical core is implemented and unit-tested without WordPress:
   safe no-op, and any transition the lifecycle forbids (e.g. `completed → processing`) is rejected
   loudly instead of corrupting order state. Framework-free and unit-tested without WooCommerce, so it
   can be driven behind the `resilient_commerce_webhook` action.
+- **Deterministic tax calculator** (`src/Tax/`) — computes tax over net line items for one or more
+  rates using integer minor units and integer `rate_e4` rates, so the only fractional step is a single
+  explicit half-up rounding per rate. Handles zero rates and compound ("tax on tax") rates, with an
+  auditable per-rate breakdown. No float arithmetic, so results are reproducible.
+- **Shipping-rate selector** (`src/Shipping/`) — picks the cheapest eligible rate for a cart's
+  subtotal and weight. Free-shipping thresholds and per-weight tiers are encoded on each rate; ties are
+  broken deterministically and an unservable cart fails loudly rather than silently offering nothing.
+- **Partial-refund rules** (`src/Order/Refund.php`, `RefundLedger.php`) — a `Refund` value object plus
+  a ledger that tracks the captured total and cumulative refunds and enforces the absolute invariant:
+  you can never refund more than was captured. Over-refunds are rejected before any money moves; a full
+  refund drives the `Refunded` status.
+- **WooCommerce order-sync adapter** (`src/Integration/`, `src/Order/WebhookStatusResolver.php`) — the
+  payload→status decision logic is extracted into a framework-free, unit-tested resolver; the adapter
+  subscribes to `resilient_commerce_webhook`, is dependency-detected via `function_exists( 'wc_get_order' )`,
+  and applies the resolved change through the tested `OrderStateMachine`. Only the `wc_get_order` load
+  and `save()` are live-WooCommerce glue.
 
 ## Documented boundary (not yet built)
 
-The thin WooCommerce glue that maps the state machine onto live `WC_Order` objects, refund
-handlers, tax/shipping adapters, the operations console, Playwright checkout journeys, and the
-WooCommerce contract-test extraction (`wc-integration-contract-test-kit`). The state-transition
-*rules* are built and tested (above); only the WooCommerce-loaded binding is deferred, because it
-cannot be exercised without a full WooCommerce runtime.
+What is deferred is the code that can only run inside a full WooCommerce runtime or a real browser:
+executing the order-sync adapter against live `WC_Order` objects (loading, `set_status`, `save`), the
+tax/shipping/refund *bindings* onto WooCommerce carts and refund objects, the operations console UI,
+Playwright checkout journeys, and the WooCommerce contract-test extraction
+(`wc-integration-contract-test-kit`). The revenue-critical *rules* — tax, shipping, refunds, order-state
+transitions, and the webhook→status mapping — are built and unit-tested above; only their
+WooCommerce-loaded and browser-driven bindings remain, because they cannot be exercised without those
+runtimes.
 
 ## Audit & security evidence
 
