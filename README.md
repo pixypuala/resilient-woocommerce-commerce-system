@@ -30,11 +30,19 @@ The revenue-critical core is implemented and unit-tested without WordPress:
   reservation can never drive stock below zero. Abandoned holds are reclaimed on expiry.
 - **REST integration** (`src/Http/`, `resilient-commerce.php`) — a `POST /resilient-commerce/v1/webhook`
   route wires the inbox to WordPress and fails safe (no endpoint unless a signing secret is set).
+- **Idempotent order-state rules** (`src/Order/`) — a WooCommerce-aligned `OrderStateMachine` that
+  applies status changes from order webhooks: a redelivered event reporting the current status is a
+  safe no-op, and any transition the lifecycle forbids (e.g. `completed → processing`) is rejected
+  loudly instead of corrupting order state. Framework-free and unit-tested without WooCommerce, so it
+  can be driven behind the `resilient_commerce_webhook` action.
 
 ## Documented boundary (not yet built)
 
-WooCommerce order/refund handlers, tax/shipping adapters, the operations console, Playwright
-checkout journeys, and the WooCommerce contract-test extraction (`wc-integration-contract-test-kit`).
+The thin WooCommerce glue that maps the state machine onto live `WC_Order` objects, refund
+handlers, tax/shipping adapters, the operations console, Playwright checkout journeys, and the
+WooCommerce contract-test extraction (`wc-integration-contract-test-kit`). The state-transition
+*rules* are built and tested (above); only the WooCommerce-loaded binding is deferred, because it
+cannot be exercised without a full WooCommerce runtime.
 
 ## PCAAP
 
