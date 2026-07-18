@@ -1,0 +1,23 @@
+name: CI
+
+# Runs static analysis and tests on every push and pull request.
+# Individual jobs are enabled per repo as the corresponding tooling lands.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel superseded runs on the same ref to save CI minutes.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Placeholder gate
+        # Replaced with real lint/test steps as each repo's tooling is added.
+        run: echo "CI scaffold present; per-repo steps are added during implementation."

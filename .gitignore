@@ -1,0 +1,26 @@
+# Dependencies
+/vendor/
+/node_modules/
+# Build output
+/build/
+/dist/
+*.min.js.map
+# WordPress environment
+/wordpress-core/
+wp-config.php
+/wp-content/uploads/
+# Local + editor
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/
+.env
+.env.local
+# Test + coverage
+/coverage/
+/reports/*
+!/reports/.gitkeep
+.phpunit.result.cache
+/playwright-report/
+/test-results/
