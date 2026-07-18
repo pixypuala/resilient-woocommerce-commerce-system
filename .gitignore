@@ -24,3 +24,7 @@ Thumbs.db
 .phpunit.result.cache
 /playwright-report/
 /test-results/
+
+# Internal roadmap — never publish (kept local only)
+NEXT-48-UPDATES.md
+docs/NEXT-48-UPDATES.md
