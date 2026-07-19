@@ -7,6 +7,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- Live webhook E2E: `.wp-env.json` + `tests/e2e/webhook-e2e.sh` + `.github/workflows/webhook-e2e.yml` boot a real WordPress (Docker) with the plugin active and drive the REST webhook endpoint over HTTP, asserting accepted/duplicate/invalid-signature/stale live. Verified the activation hook creates `wp_rc_processed_events` and the atomic `$wpdb` dedup ledger persists ids (DB-proven idempotency). Evidence in `docs/audit/RELEASE-EVIDENCE.md`.
 - Repository scaffolding: governance files, docs, and CI skeleton.
 - Replay-safe, idempotent webhook inbox: constant-time HMAC verification, replay window, atomic dedup ($wpdb UNIQUE-key store).
 - Oversell-safe stock ledger: reserved vs committed stock, TTL reclaim, never sells below zero.

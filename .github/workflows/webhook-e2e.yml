@@ -1,0 +1,42 @@
+name: Webhook E2E
+
+# Boots a real WordPress (wp-env / Docker) with the plugin active and the signing
+# secret configured, then drives the live REST webhook endpoint over HTTP and
+# asserts the signature / replay-window / dedup behaviour end-to-end.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  webhook-e2e:
+    name: Live webhook E2E (wp-env)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable Corepack (pnpm)
+        run: corepack enable
+
+      - name: Start WordPress (wp-env)
+        run: corepack pnpm dlx @wordpress/env@latest start
+
+      - name: Run the live webhook E2E
+        env:
+          RC_BASE_URL: http://localhost:8888
+          RC_SECRET: webhook-e2e-test-secret-value
+        run: bash tests/e2e/webhook-e2e.sh
+
+      - name: Stop WordPress
+        if: always()
+        run: corepack pnpm dlx @wordpress/env@latest stop

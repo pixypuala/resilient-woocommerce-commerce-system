@@ -52,6 +52,31 @@ of static checking today.
 `8.1`, `8.2`, `8.3`, `8.4`. The local runner additionally confirms green on
 `8.5.8` (above the declared floor; corroborating only).
 
+## Executed — live WordPress webhook E2E
+
+The webhook inbox has been exercised **end-to-end against a real, booted
+WordPress + MySQL** (WordPress running via `wp-env` / Docker, the plugin active,
+the signing secret set through `RESILIENT_COMMERCE_WEBHOOK_SECRET`). The harness
+(`tests/e2e/webhook-e2e.sh`, CI: `.github/workflows/webhook-e2e.yml`) POSTs real
+HMAC-signed requests to `POST /wp-json/resilient-commerce/v1/webhook` and asserts
+the status/`result` for each path. Real output:
+
+```
+Endpoint: http://localhost:8890/wp-json/resilient-commerce/v1/webhook
+  PASS  valid delivery accepted            (HTTP 200, result=accepted)
+  PASS  redelivery is idempotent duplicate (HTTP 200, result=duplicate)
+  PASS  bad signature rejected             (HTTP 401, result=invalid_signature)
+  PASS  stale timestamp rejected           (HTTP 408, result=stale)
+E2E result: 4 passed, 0 failed
+```
+
+Corroborated via WP-CLI against the live database: the activation hook created
+the custom table (`SHOW TABLES LIKE '%rc_processed_events%'` → `wp_rc_processed_events`),
+and the dedup ledger persisted the processed event ids
+(`SELECT COUNT(*) FROM wp_rc_processed_events` → non-zero). So the **atomic
+`$wpdb` UNIQUE-key dedup is DB-proven, not only design-proven**, and activation +
+custom-table creation are verified on a real WordPress.
+
 ## Not executed — documented boundaries and accepted residual risks
 
 These canvas §28 evidence items were **not** produced. They are not claimed as
@@ -61,8 +86,8 @@ passed. Each carries the accepted residual risk of shipping a v0.1.0 core.
 | --- | --- | --- |
 | WordPress-version compatibility matrix | Not executed | `Requires at least: 6.5` is declared, not tested against real WP builds. Behaviour on specific WP versions unproven. |
 | PHP matrix beyond CI (real runtime, not just lint/standards) | Partial | CI proves lint + standards + unit tests on 8.1–8.4; no *WordPress-loaded* runtime run on each. |
-| Integration tests (hooks / REST / `$wpdb` / activation) | Not executed | The `$wpdb` store and REST controller are not exercised against a booted WordPress; the atomic-dedup race is design-proven, not DB-proven. |
-| End-to-end (browser / Playwright) | Not executed | No checkout/webhook journey validated in a real browser. |
+| Integration tests (hooks / REST / `$wpdb` / activation) | **Executed (webhook path)** | REST controller, `$wpdb` dedup store, and activation table creation are now exercised against a booted WordPress (see *Executed — live WordPress webhook E2E* above). The WooCommerce order-sync path against a live `WC_Order` is still not exercised. |
+| End-to-end (webhook over HTTP) | **Executed** | Signed-webhook, replay-window, and dedup behaviour validated over real HTTP against a live site. The browser **checkout** journey (Playwright) is still not run. |
 | Multisite | Not executed | Network activation and cross-site isolation unverified. |
 | Performance / load | Not executed | No query-count, latency, memory, or throughput budgets measured. |
 | Accessibility | Not executed (mostly N/A) | Plugin has no UI to audit; any future UI is unassessed. |

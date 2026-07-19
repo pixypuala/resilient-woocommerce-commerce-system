@@ -1,0 +1,7 @@
+{
+	"$schema": "https://raw.githubusercontent.com/WordPress/gutenberg/trunk/schemas/json/wp-env.json",
+	"plugins": [ "." ],
+	"config": {
+		"RESILIENT_COMMERCE_WEBHOOK_SECRET": "webhook-e2e-test-secret-value"
+	}
+}

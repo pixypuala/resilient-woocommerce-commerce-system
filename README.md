@@ -52,16 +52,24 @@ The revenue-critical core is implemented and unit-tested without WordPress:
   and applies the resolved change through the tested `OrderStateMachine`. Only the `wc_get_order` load
   and `save()` are live-WooCommerce glue.
 
+## Live-tested end to end
+
+The webhook inbox is verified **against a real, booted WordPress + MySQL** — not just unit tests.
+`tests/e2e/webhook-e2e.sh` (CI: `.github/workflows/webhook-e2e.yml`) boots WordPress via `wp-env`
+with the plugin active and a signing secret set, then POSTs real HMAC-signed requests to
+`POST /wp-json/resilient-commerce/v1/webhook` and asserts every path live: accepted (200) → idempotent
+duplicate (200) → invalid signature (401) → stale timestamp (408). WP-CLI confirms the activation hook
+created the `wp_rc_processed_events` table and the atomic `$wpdb` dedup ledger persisted the processed
+ids — so idempotency is **DB-proven**. See `docs/audit/RELEASE-EVIDENCE.md`.
+
 ## Documented boundary (not yet built)
 
-What is deferred is the code that can only run inside a full WooCommerce runtime or a real browser:
-executing the order-sync adapter against live `WC_Order` objects (loading, `set_status`, `save`), the
-tax/shipping/refund *bindings* onto WooCommerce carts and refund objects, the operations console UI,
-Playwright checkout journeys, and the WooCommerce contract-test extraction
-(`wc-integration-contract-test-kit`). The revenue-critical *rules* — tax, shipping, refunds, order-state
-transitions, and the webhook→status mapping — are built and unit-tested above; only their
-WooCommerce-loaded and browser-driven bindings remain, because they cannot be exercised without those
-runtimes.
+What still needs a full WooCommerce runtime or a browser checkout: executing the order-sync adapter
+against live `WC_Order` objects (`set_status`/`save`), binding the tax/shipping/refund calculators onto
+real WooCommerce carts and refund objects, the operations console UI, Playwright **checkout** journeys,
+and the WooCommerce contract-test extraction (`wc-integration-contract-test-kit`). The revenue-critical
+*rules* are built and unit-tested, and the **webhook path is now live-tested end to end** (above); only
+the WooCommerce-loaded and browser-checkout bindings remain.
 
 ## Audit & security evidence
 
