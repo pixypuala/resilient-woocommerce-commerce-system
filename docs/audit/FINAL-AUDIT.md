@@ -5,6 +5,10 @@
 > core at commit `83dd05b0138f8b43b7add30fc7f7e5903a7f9efb`, branch `main`.
 > No §30 certification statement is emitted — see the maturity classification
 > at the end for why.
+>
+> **Snapshot note:** this audits the commit above (27 tests). The suite has since
+> expanded to **59 tests** (tax, shipping, refund-ledger, order-sync resolver);
+> the maturity classification below is unchanged by that growth. See `CHANGELOG.md`.
 
 Evidence baseline (all real, this commit):
 

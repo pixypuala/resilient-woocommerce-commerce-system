@@ -3,6 +3,10 @@
 > Canvas §5.2 / §5.3. This records the **real, reproducible** state of the
 > repository at the commit below. Every result is the verbatim output of a
 > command run in this repo. Nothing here is aspirational.
+>
+> **Snapshot note:** figures below are the state at the commit recorded here (27
+> tests). The suite has since grown to **59 tests** (tax, shipping, refunds,
+> order-sync resolver); see `CHANGELOG.md` for the current state.
 
 ## Environment
 

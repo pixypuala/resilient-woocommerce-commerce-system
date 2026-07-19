@@ -3,6 +3,10 @@
 > Canvas §24. Scoped to what is **actually implemented** at commit
 > `83dd05b`. Mitigations below cite real code; residual risks are stated
 > honestly and marked "not executed" where no test proves them.
+>
+> **Snapshot note:** scoped to the pinned commit; tax, shipping, refund, and
+> order-sync rules added since do not change the trust boundaries or the public
+> webhook attack surface analysed here. See `CHANGELOG.md` for current scope.
 
 ## Assets being protected
 

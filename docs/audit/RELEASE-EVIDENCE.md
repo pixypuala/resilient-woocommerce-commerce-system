@@ -4,6 +4,12 @@
 > against this commit. Everything else is in the explicit **Not executed**
 > section with its accepted residual risk. This is evidence of real state, not a
 > release certification.
+>
+> **Snapshot note:** this evidence is pinned to the commit below (27 tests / 46
+> assertions). The suite has since expanded to **59 tests / 93 assertions** —
+> adding tax, shipping, refund-ledger, and webhook→status-resolver rules. See
+> `README.md` and `CHANGELOG.md` for the current state; re-run `composer test`
+> to reproduce the current figure.
 
 ## Identity
 
