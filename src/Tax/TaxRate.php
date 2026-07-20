@@ -36,6 +36,7 @@ final class TaxRate {
 			throw new TaxException( 'Tax rate label must not be empty.' );
 		}
 		if ( $rate_e4 < 0 ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Framework-free domain: this message is caught at the WordPress boundary and never reaches a response.
 			throw new TaxException( sprintf( 'Tax rate "%s" cannot be negative.', $label ) );
 		}
 	}

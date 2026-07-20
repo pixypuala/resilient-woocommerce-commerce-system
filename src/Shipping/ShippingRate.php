@@ -41,9 +41,11 @@ final class ShippingRate {
 			throw new ShippingException( 'Shipping rate label must not be empty.' );
 		}
 		if ( $cost < 0 || $min_subtotal < 0 || $min_weight < 0 ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Framework-free domain: this message is caught at the WordPress boundary and never reaches a response.
 			throw new ShippingException( sprintf( 'Shipping rate "%s" has a negative value.', $label ) );
 		}
 		if ( null !== $max_weight && $max_weight < $min_weight ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Framework-free domain: this message is caught at the WordPress boundary and never reaches a response.
 			throw new ShippingException( sprintf( 'Shipping rate "%s" has max weight below min weight.', $label ) );
 		}
 	}

@@ -89,6 +89,7 @@ final class TaxCalculator {
 	 */
 	private function record( array $per_rate, TaxRate $rate, int $tax ): array {
 		if ( array_key_exists( $rate->label(), $per_rate ) ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Framework-free domain: this message is caught at the WordPress boundary and never reaches a response.
 			throw new TaxException( sprintf( 'Duplicate tax rate label "%s".', $rate->label() ) );
 		}
 		$per_rate[ $rate->label() ] = $tax;

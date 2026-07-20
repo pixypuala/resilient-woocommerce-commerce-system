@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       Resilient Commerce
+ * Plugin Name:       Resilient Commerce for WooCommerce
  * Plugin URI:        https://github.com/pixypuala/resilient-woocommerce-commerce-system
  * Description:        Protects revenue-critical WooCommerce workflows: an idempotent, replay-safe webhook inbox and oversell-safe stock reservations.
  * Version:           0.1.0
@@ -29,11 +29,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// Prefer Composer's autoloader; fall back to a minimal PSR-4 loader.
-$autoload = __DIR__ . '/vendor/autoload.php';
-if ( is_readable( $autoload ) ) {
-	require_once $autoload;
-} else {
+/**
+ * Prefer Composer's autoloader; fall back to a minimal PSR-4 loader.
+ *
+ * Wrapped in a function so no variable from this file leaks into the global
+ * scope, where it could collide with another plugin's.
+ *
+ * @return void
+ */
+function register_autoloader(): void {
+	$autoload = __DIR__ . '/vendor/autoload.php';
+
+	if ( is_readable( $autoload ) ) {
+		require_once $autoload;
+
+		return;
+	}
+
 	spl_autoload_register(
 		static function ( string $class_name ): void {
 			$prefix = 'Pixypuala\\ResilientCommerce\\';
@@ -47,6 +59,8 @@ if ( is_readable( $autoload ) ) {
 		}
 	);
 }
+
+register_autoloader();
 
 /**
  * The signing secret. Sourced from a constant so it is never hard-coded; the

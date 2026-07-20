@@ -33,6 +33,7 @@ final class SignatureVerifier {
 			throw new \InvalidArgumentException( 'Webhook signing secret must not be empty.' );
 		}
 		if ( ! in_array( $algorithm, hash_hmac_algos(), true ) ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Framework-free domain: a construction-time programming error, never rendered into a response.
 			throw new \InvalidArgumentException( sprintf( 'Unsupported HMAC algorithm: %s', $algorithm ) );
 		}
 	}

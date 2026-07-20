@@ -77,6 +77,7 @@ final class StockLedger {
 		}
 		$this->reclaim_expired();
 		if ( isset( $this->reservations[ $reference ] ) ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Framework-free domain: this message is caught at the WordPress boundary and never reaches a response.
 			throw new StockException( sprintf( 'Reservation "%s" already exists.', $reference ) );
 		}
 		// The oversell guard: never reserve more than is actually available.
@@ -100,6 +101,7 @@ final class StockLedger {
 	public function commit( string $reference ): void {
 		$this->reclaim_expired();
 		if ( ! isset( $this->reservations[ $reference ] ) ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Framework-free domain: this message is caught at the WordPress boundary and never reaches a response.
 			throw new StockException( sprintf( 'Cannot commit unknown or expired reservation "%s".', $reference ) );
 		}
 		$this->on_hand -= $this->reservations[ $reference ]['qty'];

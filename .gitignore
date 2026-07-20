@@ -31,3 +31,6 @@ docs/NEXT-48-UPDATES.md
 # Internal engineering doc-kit (development-only, never published)
 docs/DESIGN.md
 docs/[0-9][0-9]-*.md
+
+# Built plugin artifact
+/dist/

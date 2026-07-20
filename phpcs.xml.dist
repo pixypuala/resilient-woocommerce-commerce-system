@@ -19,8 +19,4 @@
 		<exclude name="WordPress.WP.CapitalPDangit"/>
 	</rule>
 
-	<!-- Framework-free domain: exceptions are developer-facing, not HTML. -->
-	<rule ref="WordPress.Security.EscapeOutput.ExceptionNotEscaped">
-		<exclude-pattern>*/src/*</exclude-pattern>
-	</rule>
 </ruleset>

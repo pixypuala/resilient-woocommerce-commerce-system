@@ -38,6 +38,7 @@ enum OrderStatus: string {
 		$normalized = 0 === strncmp( $wc_status, 'wc-', 3 ) ? substr( $wc_status, 3 ) : $wc_status;
 		$status     = self::tryFrom( $normalized );
 		if ( null === $status ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Framework-free domain: this message is caught at the WordPress boundary and never reaches a response.
 			throw new OrderException( sprintf( 'Unknown order status "%s".', $wc_status ) );
 		}
 		return $status;

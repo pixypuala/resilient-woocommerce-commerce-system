@@ -1,0 +1,31 @@
+# Everything that belongs in the repository but not in the shipped plugin.
+# Consumed by bin/build-plugin.sh; mirrors the WP-CLI dist-archive convention.
+
+.git
+.github
+.gitignore
+.gitattributes
+.editorconfig
+.distignore
+.env
+.env.example
+.wp-env.json
+AGENTS.md
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+PROGRESS.md
+SUPPORT.md
+SECURITY.md
+CHANGELOG.md
+composer.json
+composer.lock
+phpcs.xml.dist
+phpunit.xml.dist
+docs
+reports
+tests
+node_modules
+dist
+vendor
+bin
+.phpunit.result.cache

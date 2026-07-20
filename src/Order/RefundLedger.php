@@ -48,6 +48,7 @@ final class RefundLedger {
 	 */
 	public function apply( Refund $refund ): void {
 		if ( $refund->amount() > $this->remaining() ) {
+			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Framework-free domain: this message is caught at the WordPress boundary and never reaches a response.
 			throw new OrderException(
 				sprintf(
 					'Refund of %d exceeds the remaining refundable amount of %d.',
@@ -55,6 +56,7 @@ final class RefundLedger {
 					$this->remaining()
 				)
 			);
+			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
 		$this->refunded += $refund->amount();
 	}

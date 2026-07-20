@@ -47,6 +47,7 @@ final class TaxBreakdown {
 	 */
 	public function for_rate( string $label ): int {
 		if ( ! array_key_exists( $label, $this->per_rate ) ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Framework-free domain: this message is caught at the WordPress boundary and never reaches a response.
 			throw new TaxException( sprintf( 'No tax was calculated for rate "%s".', $label ) );
 		}
 		return $this->per_rate[ $label ];

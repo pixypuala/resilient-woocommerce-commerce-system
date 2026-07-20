@@ -51,6 +51,7 @@ final class OrderStateMachine {
 			return false;
 		}
 		if ( ! $this->status->can_transition_to( $target ) ) {
+			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Framework-free domain: this message is caught at the WordPress boundary and never reaches a response.
 			throw new OrderException(
 				sprintf(
 					'Illegal order transition from "%s" to "%s".',
@@ -58,6 +59,7 @@ final class OrderStateMachine {
 					$target->value
 				)
 			);
+			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
 		$this->status = $target;
 		return true;

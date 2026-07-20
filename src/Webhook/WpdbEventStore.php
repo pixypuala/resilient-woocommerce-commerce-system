@@ -93,6 +93,7 @@ final class WpdbEventStore implements ProcessedEventStore {
 			return false;
 		}
 
+		// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Framework-free domain: the controller catches this and forwards the detail to an operator-only action; the 503 response body never carries it.
 		throw new EventStoreUnavailable(
 			sprintf(
 				'Could not claim event "%s" in %s: %s',
@@ -101,5 +102,6 @@ final class WpdbEventStore implements ProcessedEventStore {
 				'' !== $this->wpdb->last_error ? $this->wpdb->last_error : 'the row was not written and is not present.'
 			)
 		);
+		// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 	}
 }
