@@ -18,6 +18,7 @@ declare( strict_types=1 );
 
 namespace Pixypuala\ResilientCommerce\Integration;
 
+use Pixypuala\ResilientCommerce\Order\OrderException;
 use Pixypuala\ResilientCommerce\Order\OrderStateMachine;
 use Pixypuala\ResilientCommerce\Order\OrderStatus;
 use Pixypuala\ResilientCommerce\Order\WebhookStatusResolver;
@@ -53,21 +54,34 @@ final class WooCommerceOrderSync {
 			return;
 		}
 
-		$change = $this->resolver->resolve( $body );
-		if ( null === $change ) {
-			return; // Not an order-status webhook.
-		}
+		try {
+			$change = $this->resolver->resolve( $body );
+			if ( null === $change ) {
+				return; // Not an order-status webhook.
+			}
 
-		// Irreducible live-WooCommerce glue: load, transition, persist.
-		$order = wc_get_order( $change->order_id() );
-		if ( ! $order instanceof \WC_Order ) {
-			return;
-		}
+			// Irreducible live-WooCommerce glue: load, transition, persist.
+			$order = wc_get_order( $change->order_id() );
+			if ( ! $order instanceof \WC_Order ) {
+				return;
+			}
 
-		$machine = new OrderStateMachine( OrderStatus::from_wc_status( (string) $order->get_status() ) );
-		if ( $machine->transition_to( $change->target() ) ) {
-			$order->set_status( $change->target()->value );
-			$order->save();
+			$machine = new OrderStateMachine( OrderStatus::from_wc_status( (string) $order->get_status() ) );
+			if ( $machine->transition_to( $change->target() ) ) {
+				$order->set_status( $change->target()->value );
+				$order->save();
+			}
+		} catch ( OrderException $error ) {
+			/*
+			 * The domain rejected an authenticated delivery: a stale redelivery that
+			 * would move the order backwards, an unknown status, a malformed body.
+			 * That rejection is correct and must not be swallowed — but it is a bad
+			 * message, not a broken server, and letting it escape would fatal the
+			 * REST request for a payload the provider can never make valid. So the
+			 * order is left untouched and the rejection is re-raised where operators
+			 * can see it: a dedicated action any logger or alerting hook can bind to.
+			 */
+			do_action( 'resilient_commerce_order_sync_failed', $body, $error->getMessage() );
 		}
 	}
 }
