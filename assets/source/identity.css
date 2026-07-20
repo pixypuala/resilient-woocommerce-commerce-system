@@ -1,0 +1,107 @@
+/*
+ * Resilient Commerce — visual identity.
+ *
+ * Every value the marketing assets use lives here as a token. Nothing
+ * downstream may introduce a raw colour, size, or radius.
+ *
+ * Direction: "ledger". This plugin stands between a payment provider's retry
+ * queue and a store's money, so the identity is a control room at night: a warm
+ * graphite field, one amber signal for the gate itself, and a strict semantic
+ * pair — green for what was accepted, red for what was refused. Amber is scarce
+ * on marks and hairlines and generous on exactly one band. Archivo carries the
+ * structure, IBM Plex Sans the reading, IBM Plex Mono every place a real header,
+ * status code, or status name is shown.
+ *
+ * It deliberately shares no register with the sibling plugins in this
+ * portfolio: no cool blue-black field, no mint signal, no warm editorial cream.
+ * Three products must not read as one template recoloured.
+ */
+
+@font-face {
+	font-family: 'Archivo';
+	src: url('fonts/Archivo.ttf') format('truetype');
+	font-weight: 100 900;
+	font-stretch: 62% 125%;
+	font-display: block;
+}
+
+@font-face {
+	font-family: 'IBM Plex Sans';
+	src: url('fonts/IBMPlexSans.ttf') format('truetype');
+	font-weight: 100 700;
+	font-stretch: 62% 100%;
+	font-display: block;
+}
+
+@font-face {
+	font-family: 'IBM Plex Mono';
+	src: url('fonts/IBMPlexMono-Regular.ttf') format('truetype');
+	font-weight: 400;
+	font-display: block;
+}
+
+@font-face {
+	font-family: 'IBM Plex Mono';
+	src: url('fonts/IBMPlexMono-SemiBold.ttf') format('truetype');
+	font-weight: 600;
+	font-display: block;
+}
+
+:root {
+	/* Surfaces — warm graphite, never flat #000 and never blue. */
+	--ink: #131110;
+	--surface: #1c1917;
+	--surface-raised: #241f1c;
+	--surface-line: #332c27;
+	--hairline: rgba(233, 216, 197, 0.14);
+	--hairline-soft: rgba(233, 216, 197, 0.08);
+
+	/* Signal — the gate. Scarce on marks, generous on one band. */
+	--signal: #f5a524;
+	--signal-deep: #a86a05;
+	--signal-wash: rgba(245, 165, 36, 0.11);
+	--signal-edge: rgba(245, 165, 36, 0.36);
+
+	/* Semantics — the two answers the inbox gives. */
+	--accepted: #57d9a3;
+	--accepted-wash: rgba(87, 217, 163, 0.11);
+	--accepted-edge: rgba(87, 217, 163, 0.34);
+	--refused: #ff6f59;
+	--refused-wash: rgba(255, 111, 89, 0.11);
+	--refused-edge: rgba(255, 111, 89, 0.34);
+
+	/* Text */
+	--on-ink: #faf6f1;
+	--on-ink-soft: #d9cfc4;
+	--on-ink-muted: #a1958a;
+	--on-signal: #1c1200;
+
+	/* Type */
+	--display: 'Archivo', system-ui, sans-serif;
+	--text: 'IBM Plex Sans', system-ui, sans-serif;
+	--mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+	/* Radius — hierarchical: chips, rows, panels, tiles. */
+	--r-xs: 5px;
+	--r-sm: 8px;
+	--r-md: 12px;
+	--r-lg: 20px;
+	--r-tile: 22.5%;
+}
+
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	background: var(--ink);
+	color: var(--on-ink);
+	font-family: var(--text);
+	-webkit-font-smoothing: antialiased;
+}
+
+.mark {
+	display: block;
+}

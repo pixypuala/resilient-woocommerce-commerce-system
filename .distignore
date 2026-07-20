@@ -29,3 +29,4 @@ dist
 vendor
 bin
 .phpunit.result.cache
+assets

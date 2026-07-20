@@ -34,3 +34,9 @@ docs/[0-9][0-9]-*.md
 
 # Built plugin artifact
 /dist/
+
+# Font cache for the asset build (upstream OFL releases, not vendored).
+assets/.fonts-cache/
+assets/source/fonts/
+assets/node_modules/
+assets/pnpm-lock.yaml

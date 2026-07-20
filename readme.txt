@@ -93,6 +93,11 @@ event has already been applied.
 Yes. The ledger is per-site. Network activation creates it for every existing
 site, and sites created later get one on creation.
 
+== Screenshots ==
+
+1. The webhook inbox. The four gates every delivery passes — signature, well-formedness, freshness, and the unique-key claim — beside the full outcome table: which HTTP status each result returns and whether the handler ran.
+2. The order state machine. Every transition the WooCommerce-aligned lifecycle permits, the two terminal states that permit none, and the illegal transitions that raise an OrderException instead of corrupting the order.
+
 == Changelog ==
 
 = 0.1.0 =

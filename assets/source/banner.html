@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Resilient Commerce — banner</title>
+<link rel="stylesheet" href="identity.css">
+<style>
+	/*
+	 * One layout, two required widths (772 and 1544). Everything is sized in cqw
+	 * against the banner itself, so the 1544 render is the 772 render at exactly
+	 * twice the scale rather than a second layout that drifts.
+	 */
+	html, body { width: 100%; height: 100%; overflow: hidden; }
+
+	.banner {
+		container-type: inline-size;
+		position: relative;
+		width: 100%;
+		height: 100%;
+		background:
+			radial-gradient(115% 150% at 92% 8%, rgba(245, 165, 36, 0.16), transparent 56%),
+			radial-gradient(80% 120% at 2% 96%, rgba(87, 217, 163, 0.09), transparent 58%),
+			linear-gradient(150deg, #241f1b 0%, #17130f 55%, #0f0d0c 100%);
+		display: grid;
+		grid-template-columns: 1fr auto;
+		align-items: center;
+		gap: 3.4cqw;
+		padding: 0 4.6cqw;
+		overflow: hidden;
+	}
+
+	/* A faint ruled ledger, not decoration: horizontal lines only. */
+	.banner::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background-image: linear-gradient(rgba(233, 216, 197, 0.05) 1px, transparent 1px);
+		background-size: 100% 2.9cqw;
+		mask-image: linear-gradient(105deg, #000 0%, transparent 58%);
+	}
+
+	.copy { position: relative; z-index: 1; min-width: 0; }
+
+	.eyebrow {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.72cqw;
+		font-family: var(--mono);
+		font-size: 1.36cqw;
+		font-weight: 600;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: var(--signal);
+		margin-bottom: 1.55cqw;
+	}
+	.eyebrow::before {
+		content: '';
+		width: 1.3cqw;
+		height: 1.3cqw;
+		border-radius: 50%;
+		background: var(--signal);
+		box-shadow: 0 0 0 0.4cqw rgba(245, 165, 36, 0.16);
+	}
+
+	h1 {
+		font-family: var(--display);
+		font-size: 6.4cqw;
+		font-weight: 800;
+		font-stretch: 92%;
+		line-height: 0.95;
+		letter-spacing: -0.036em;
+		color: var(--on-ink);
+	}
+	h1 em { font-style: normal; color: var(--signal); }
+
+	p {
+		margin-top: 1.75cqw;
+		font-size: 1.94cqw;
+		font-weight: 400;
+		line-height: 1.42;
+		color: var(--on-ink-muted);
+		max-width: 45cqw;
+	}
+
+	/* Product chrome: the outcomes the endpoint actually returns. */
+	.inbox {
+		position: relative;
+		z-index: 1;
+		width: 36cqw;
+		border-radius: 1.6cqw;
+		background: linear-gradient(163deg, #262019, #16120f);
+		border: 0.13cqw solid rgba(233, 216, 197, 0.19);
+		box-shadow: 0 2.4cqw 5cqw rgba(0, 0, 0, 0.6);
+		overflow: hidden;
+	}
+	.inbox__bar {
+		display: flex;
+		align-items: center;
+		gap: 0.8cqw;
+		padding: 1.15cqw 1.5cqw;
+		border-bottom: 0.13cqw solid rgba(233, 216, 197, 0.13);
+		background: rgba(255, 255, 255, 0.024);
+	}
+	.verb {
+		font-family: var(--mono);
+		font-size: 1.02cqw;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		color: var(--on-signal);
+		background: var(--signal);
+		border-radius: 0.4cqw;
+		padding: 0.28cqw 0.62cqw;
+	}
+	.route {
+		font-family: var(--mono);
+		font-size: 1.14cqw;
+		color: var(--on-ink-soft);
+	}
+
+	.row {
+		display: grid;
+		grid-template-columns: auto 1fr auto;
+		align-items: center;
+		gap: 1cqw;
+		padding: 1.22cqw 1.5cqw;
+		border-bottom: 0.13cqw solid rgba(233, 216, 197, 0.08);
+	}
+	.row:last-child { border-bottom: 0; }
+
+	.evt {
+		font-family: var(--mono);
+		font-size: 1.12cqw;
+		color: var(--on-ink-muted);
+	}
+	.res {
+		font-family: var(--mono);
+		font-size: 1.12cqw;
+		font-weight: 600;
+		text-align: right;
+	}
+	.code {
+		font-family: var(--mono);
+		font-size: 1.02cqw;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		padding: 0.3cqw 0.68cqw;
+		border-radius: 999px;
+		border: 0.13cqw solid;
+	}
+	.ok   { color: var(--accepted); border-color: var(--accepted-edge); background: var(--accepted-wash); }
+	.warn { color: var(--signal);   border-color: var(--signal-edge);   background: var(--signal-wash); }
+	.bad  { color: var(--refused);  border-color: var(--refused-edge);  background: var(--refused-wash); }
+	.res.ok   { color: var(--accepted); }
+	.res.warn { color: var(--signal); }
+	.res.bad  { color: var(--refused); }
+</style>
+</head>
+<body>
+	<div class="banner">
+		<div class="copy">
+			<span class="eyebrow">WooCommerce webhooks</span>
+			<h1>Retried twice.<br>Charged <em>once</em>.</h1>
+			<p>A signed, deduplicating inbox and an order machine that refuses illegal transitions.</p>
+		</div>
+
+		<div class="inbox">
+			<div class="inbox__bar">
+				<span class="verb">POST</span>
+				<span class="route">/resilient-commerce/v1/webhook</span>
+			</div>
+			<div class="row">
+				<span class="code ok">200</span>
+				<span class="evt">evt_9f3ab1</span>
+				<span class="res ok">accepted</span>
+			</div>
+			<div class="row">
+				<span class="code warn">200</span>
+				<span class="evt">evt_9f3ab1</span>
+				<span class="res warn">duplicate</span>
+			</div>
+			<div class="row">
+				<span class="code bad">401</span>
+				<span class="evt">evt_c07e42</span>
+				<span class="res bad">invalid_signature</span>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

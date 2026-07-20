@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Resilient Commerce — the order state machine</title>
+<link rel="stylesheet" href="identity.css">
+<style>
+	html, body { width: 100%; height: 100%; overflow: hidden; }
+
+	.shot {
+		container-type: inline-size;
+		width: 100%;
+		height: 100%;
+		padding: 4.5cqw 5cqw;
+		background:
+			radial-gradient(85% 110% at 8% 112%, rgba(87, 217, 163, 0.11), transparent 56%),
+			radial-gradient(80% 100% at 96% -8%, rgba(245, 165, 36, 0.13), transparent 55%),
+			linear-gradient(158deg, #241f1b 0%, #17130f 58%, #0f0d0c 100%);
+		display: flex;
+		flex-direction: column;
+	}
+
+	header { margin-bottom: 2.7cqw; }
+	.eyebrow {
+		font-family: var(--mono);
+		font-size: 1cqw;
+		font-weight: 600;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		color: var(--signal);
+	}
+	h1 {
+		margin-top: 0.95cqw;
+		font-family: var(--display);
+		font-size: 3.55cqw;
+		font-weight: 800;
+		font-stretch: 92%;
+		letter-spacing: -0.034em;
+		line-height: 1.02;
+	}
+	.lede {
+		margin-top: 0.95cqw;
+		font-size: 1.35cqw;
+		line-height: 1.48;
+		color: var(--on-ink-muted);
+		max-width: 62cqw;
+	}
+
+	.split {
+		flex: 1;
+		min-height: 0;
+		display: grid;
+		grid-template-columns: 1.28fr 0.72fr;
+		gap: 2.1cqw;
+		align-items: stretch;
+	}
+
+	.panel {
+		border-radius: 1.3cqw;
+		background: linear-gradient(166deg, #262019, #16120f);
+		border: 1px solid rgba(233, 216, 197, 0.16);
+		box-shadow: 0 1.8cqw 3.6cqw rgba(0, 0, 0, 0.55);
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+	}
+	.panel__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1cqw;
+		padding: 1.18cqw 1.5cqw;
+		border-bottom: 1px solid rgba(233, 216, 197, 0.12);
+		background: rgba(255, 255, 255, 0.024);
+	}
+	.panel__title { font-size: 1.15cqw; font-weight: 600; }
+	.chip {
+		font-family: var(--mono);
+		font-size: 0.9cqw;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		padding: 0.36cqw 0.8cqw;
+		border-radius: 999px;
+		color: var(--on-ink-muted);
+		background: rgba(233, 216, 197, 0.07);
+		border: 1px solid rgba(233, 216, 197, 0.17);
+	}
+	.chip--ok  { color: var(--accepted); background: var(--accepted-wash); border-color: var(--accepted-edge); }
+	.chip--bad { color: var(--refused);  background: var(--refused-wash);  border-color: var(--refused-edge); }
+
+	/* Left: every legal transition, exactly as the enum declares them. */
+	.tr {
+		display: grid;
+		grid-template-columns: 9.6cqw 1fr;
+		align-items: center;
+		gap: 1.2cqw;
+		flex: 1;
+		padding: 0 1.5cqw;
+		border-bottom: 1px solid rgba(233, 216, 197, 0.08);
+	}
+	.tr:last-child { border-bottom: 0; }
+	.from {
+		font-family: var(--mono);
+		font-size: 1.05cqw;
+		font-weight: 600;
+		color: var(--on-ink);
+		text-align: center;
+		padding: 0.45cqw 0;
+		border-radius: 0.5cqw;
+		background: rgba(233, 216, 197, 0.08);
+		border: 1px solid rgba(233, 216, 197, 0.18);
+	}
+	.from--end {
+		color: var(--on-ink-muted);
+		background: transparent;
+		border-style: dashed;
+	}
+	.targets { display: flex; flex-wrap: wrap; align-items: center; gap: 0.62cqw; }
+	.to {
+		font-family: var(--mono);
+		font-size: 1cqw;
+		font-weight: 600;
+		padding: 0.4cqw 0.8cqw;
+		border-radius: 999px;
+		color: var(--accepted);
+		background: var(--accepted-wash);
+		border: 1px solid var(--accepted-edge);
+	}
+	.terminal {
+		font-size: 1.02cqw;
+		color: var(--on-ink-muted);
+		font-style: italic;
+	}
+
+	/* Right: what the machine throws rather than applies. */
+	.no {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 0.5cqw;
+		padding: 0 1.5cqw;
+		border-bottom: 1px solid rgba(233, 216, 197, 0.08);
+	}
+	.no:last-child { border-bottom: 0; }
+	.no__pair {
+		display: flex;
+		align-items: center;
+		gap: 0.62cqw;
+		font-family: var(--mono);
+		font-size: 1.05cqw;
+		font-weight: 600;
+		color: var(--on-ink);
+	}
+	.no__pair i {
+		font-style: normal;
+		color: var(--refused);
+		font-size: 1.15cqw;
+	}
+	.no__why { font-size: 1cqw; line-height: 1.4; color: var(--on-ink-muted); }
+
+	footer {
+		margin-top: auto;
+		display: flex;
+		align-items: center;
+		gap: 1.5cqw;
+		padding-top: 2cqw;
+		color: var(--on-ink-muted);
+		font-size: 1.05cqw;
+	}
+	footer strong { color: var(--on-ink); font-weight: 600; }
+	footer code { font-family: var(--mono); font-size: 0.98cqw; color: var(--on-ink-soft); }
+	.rule { flex: 1; height: 1px; background: rgba(233, 216, 197, 0.15); }
+</style>
+</head>
+<body>
+	<div class="shot">
+		<header>
+			<div class="eyebrow">Order state machine</div>
+			<h1>A late webhook can't walk an order backwards.</h1>
+			<p class="lede">Only the transitions a redelivered, out-of-order event can safely apply are permitted. Anything else raises rather than quietly corrupting the order.</p>
+		</header>
+
+		<div class="split">
+			<section class="panel">
+				<div class="panel__head">
+					<span class="panel__title">Permitted transitions</span>
+					<span class="chip chip--ok">applied</span>
+				</div>
+				<div class="tr">
+					<span class="from">pending</span>
+					<div class="targets">
+						<span class="to">on-hold</span><span class="to">processing</span><span class="to">cancelled</span><span class="to">failed</span>
+					</div>
+				</div>
+				<div class="tr">
+					<span class="from">on-hold</span>
+					<div class="targets">
+						<span class="to">processing</span><span class="to">cancelled</span><span class="to">failed</span>
+					</div>
+				</div>
+				<div class="tr">
+					<span class="from">processing</span>
+					<div class="targets">
+						<span class="to">completed</span><span class="to">cancelled</span><span class="to">refunded</span><span class="to">failed</span>
+					</div>
+				</div>
+				<div class="tr">
+					<span class="from">completed</span>
+					<div class="targets"><span class="to">refunded</span></div>
+				</div>
+				<div class="tr">
+					<span class="from">failed</span>
+					<div class="targets"><span class="to">pending</span><span class="to">cancelled</span></div>
+				</div>
+				<div class="tr">
+					<span class="from from--end">cancelled</span>
+					<div class="targets"><span class="terminal">terminal — no onward transition</span></div>
+				</div>
+				<div class="tr">
+					<span class="from from--end">refunded</span>
+					<div class="targets"><span class="terminal">terminal — no onward transition</span></div>
+				</div>
+			</section>
+
+			<section class="panel">
+				<div class="panel__head">
+					<span class="panel__title">Refused</span>
+					<span class="chip chip--bad">OrderException</span>
+				</div>
+				<div class="no">
+					<div class="no__pair">completed <i>&#10142;</i> processing</div>
+					<div class="no__why">Fulfilment cannot be un-shipped by a stale event.</div>
+				</div>
+				<div class="no">
+					<div class="no__pair">refunded <i>&#10142;</i> completed</div>
+					<div class="no__why">Money already returned. The state is terminal.</div>
+				</div>
+				<div class="no">
+					<div class="no__pair">cancelled <i>&#10142;</i> processing</div>
+					<div class="no__why">A cancelled order never resumes on its own.</div>
+				</div>
+				<div class="no">
+					<div class="no__pair">on-hold <i>&#10142;</i> completed</div>
+					<div class="no__why">Payment was never confirmed to be processing.</div>
+				</div>
+			</section>
+		</div>
+
+		<footer>
+			<span><strong>Redelivery is a no-op.</strong> <code>processing &#10142; processing</code> returns false and changes nothing.</span>
+			<span class="rule"></span>
+			<span>Stock holds expire and return to available — no oversell.</span>
+		</footer>
+	</div>
+</body>
+</html>
