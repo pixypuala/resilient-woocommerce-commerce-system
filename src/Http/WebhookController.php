@@ -15,6 +15,7 @@ declare( strict_types=1 );
 
 namespace Pixypuala\ResilientCommerce\Http;
 
+use Pixypuala\ResilientCommerce\Webhook\EventStoreUnavailable;
 use Pixypuala\ResilientCommerce\Webhook\InboxResult;
 use Pixypuala\ResilientCommerce\Webhook\WebhookInbox;
 
@@ -62,22 +63,33 @@ final class WebhookController {
 		$event_id  = (string) $request->get_header( 'X-Rc-Event-Id' );
 		$timestamp = (int) $request->get_header( 'X-Rc-Timestamp' );
 
-		$result = $this->inbox->receive(
-			$raw_body,
-			$signature,
-			$event_id,
-			$timestamp,
-			function ( string $body ) use ( $event_id ): void {
-				/**
-				 * Fires once per unique, authenticated webhook. Order/refund
-				 * side effects subscribe here; the inbox guarantees at-most-once.
-				 *
-				 * @param string $body     Raw request body.
-				 * @param string $event_id Provider event id.
-				 */
-				do_action( 'resilient_commerce_webhook', $body, $event_id );
-			}
-		);
+		try {
+			$result = $this->inbox->receive(
+				$raw_body,
+				$signature,
+				$event_id,
+				$timestamp,
+				function ( string $body ) use ( $event_id ): void {
+					/**
+					 * Fires once per unique, authenticated webhook. Order/refund
+					 * side effects subscribe here; the inbox guarantees at-most-once.
+					 *
+					 * @param string $body     Raw request body.
+					 * @param string $event_id Provider event id.
+					 */
+					do_action( 'resilient_commerce_webhook', $body, $event_id );
+				}
+			);
+		} catch ( EventStoreUnavailable $error ) {
+			/*
+			 * Without the dedup store there is no at-most-once guarantee, so the
+			 * event must not be processed and must not be acknowledged either.
+			 * A 503 keeps it in the provider's retry queue instead of dropping it.
+			 */
+			do_action( 'resilient_commerce_store_unavailable', $event_id, $error->getMessage() );
+
+			$result = InboxResult::Unavailable;
+		}
 
 		return new \WP_REST_Response(
 			array( 'result' => $result->value ),
@@ -99,6 +111,8 @@ final class WebhookController {
 			InboxResult::InvalidSignature => 401,
 			InboxResult::Stale            => 408,
 			InboxResult::Malformed        => 400,
+			// 503 asks the provider to retry: the event may never have been seen.
+			InboxResult::Unavailable      => 503,
 		};
 	}
 }

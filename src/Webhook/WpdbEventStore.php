@@ -66,15 +66,40 @@ final class WpdbEventStore implements ProcessedEventStore {
 	 * @param string $event_id Provider-unique event id.
 	 *
 	 * @return bool True when this caller won the claim.
+	 *
+	 * @throws EventStoreUnavailable When the insert failed for any reason other
+	 *                               than the id already being claimed.
 	 */
 	public function claim( string $event_id ): bool {
-		// Suppress the expected duplicate-key warning; a false return is the
-		// signal that the id was already claimed (a duplicate delivery).
+		// Suppress the expected duplicate-key warning; the failure is inspected below.
 		$previous = $this->wpdb->suppress_errors( true );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$inserted = $this->wpdb->insert( $this->table, array( 'event_id' => $event_id ), array( '%s' ) );
 		$this->wpdb->suppress_errors( $previous );
 
-		return false !== $inserted && $this->wpdb->rows_affected > 0;
+		if ( false !== $inserted && $this->wpdb->rows_affected > 0 ) {
+			return true;
+		}
+
+		/*
+		 * A failed insert has two very different meanings. If the id is now
+		 * readable, the unique constraint did its job and this is a duplicate.
+		 * If it is not, the write did not happen — a missing table, a lost
+		 * connection — and reporting that as a duplicate would silently discard
+		 * every delivery forever. Reading back costs one query on a path that is
+		 * rare by construction, and it never guesses from an error string.
+		 */
+		if ( $this->has( $event_id ) ) {
+			return false;
+		}
+
+		throw new EventStoreUnavailable(
+			sprintf(
+				'Could not claim event "%s" in %s: %s',
+				$event_id,
+				$this->table,
+				'' !== $this->wpdb->last_error ? $this->wpdb->last_error : 'the row was not written and is not present.'
+			)
+		);
 	}
 }

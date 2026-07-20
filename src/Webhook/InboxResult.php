@@ -23,6 +23,8 @@ enum InboxResult: string {
 	case Stale = 'stale';
 	/** Required fields (id/timestamp) missing or malformed: rejected. */
 	case Malformed = 'malformed';
+	/** The dedup store gave no answer, so at-most-once cannot be guaranteed: retry. */
+	case Unavailable = 'storage_unavailable';
 
 	/**
 	 * Whether this outcome means the handler ran.
